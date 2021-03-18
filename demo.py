@@ -1,5 +1,5 @@
-from .linear_augmentation import *
-from .non_linear_augmentation import *
+from linear_augmentation import *
+from non_linear_augmentation import *
 import cv2
 import imageio
 from tqdm import tqdm
@@ -17,12 +17,11 @@ augmentations = [
     perspective,
     stretch,
     blur,
-    add_virtual_background2,
     add_noise,
 ]
 
 image = cv2.imread(
-    "fuse/notebooks/exploratory/data/W2/horizontal/w2_horizontal_052.jpg"
+    "/home/aayush-fm/Documents/fuse/fuse-extract-v2-ai/fuse/notebooks/exploratory/data/W2/horizontal/w2_horizontal_052.jpg"
 )
 
 

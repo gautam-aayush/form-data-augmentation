@@ -1,18 +1,18 @@
 import cv2
 import numpy as np
 from pathlib import Path
-from .affine_transform import rotation
-from .utility import _perspective_warp, _add_texture, _generate_shadow_coordinates
-from .non_linear_augmentation import distort
+from affine_transform import rotation
+from utility import _perspective_warp, _add_texture, _generate_shadow_coordinates
+from non_linear_augmentation import distort
 
 PATH_TO_WRINKLED_TEXTURE = Path(
-    "fuse/notebooks/exploratory/data/augmentation-helpers/overlays/wrinkle"
+    "augmentation-helpers/overlays/wrinkle"
 )
 PATH_TO_MONITOR_TEXTURE = Path(
-    "fuse/notebooks/exploratory/data/augmentation-helpers/overlays/monitor"
+    "augmentation-helpers/overlays/monitor"
 )
 PATH_TO_BG_IMAGES = Path(
-    "fuse/notebooks/exploratory/data/augmentation-helpers/background"
+    "augmentation-helpers/background"
 )
 
 assert PATH_TO_WRINKLED_TEXTURE.exists()
@@ -20,153 +20,91 @@ assert PATH_TO_MONITOR_TEXTURE.exists()
 assert PATH_TO_BG_IMAGES.exists()
 
 
-def add_noise(image, noise_typ=None):
+def add_noise(image: np.ndarray, noise_typ: str = None) -> np.ndarray:
+    """
+    Adds noise to an image. Avaiable noise_types "gauss",
+    "s&p" (salt and pepper)
+    Args:
+        image (np.ndarray): BGR image on which to add noise
+        noise_typ (str, optional): type of noise to add: "gauss" or "s&p".
+        Defaults to None.
+
+    Returns:
+        np.ndarray: BGR image with noise added
+    """
     noise_types = ["gauss", "s&p"]
     if not noise_typ:
-        noise_typ = noise_types[np.random.randint(0, len(noise_types))]
+        noise_typ = np.random.choice(noise_types)
     if noise_typ == "gauss":
-        row, col, ch = image.shape
-        mean = 0
-        var = 30
+        height, width, ch = image.shape
+        mean = 0  # gaussian mean
+        var = 30  # gaussian variance
         sigma = var ** 0.5
-        gauss = np.random.normal(mean, sigma, (row, col, ch))
-        gauss = gauss.reshape(row, col, ch)
+        gauss = np.random.normal(mean, sigma, (height, width, ch))
         noisy = image + gauss
         return noisy.astype(np.uint8)
     elif noise_typ == "s&p":
-        row, col, ch = image.shape
+        height, width, ch = image.shape
         s_vs_p = 0.5
-        amount = 0.004
+        amount = 0.004  # fraction of image to be converted to noise
         out = np.copy(image)
         # Salt mode
         num_salt = np.ceil(amount * image.size * s_vs_p)
+        # get random coordinates for sale noise
         coords = [np.random.randint(0, i - 1, int(num_salt)) for i in image.shape]
         out[coords] = 1
 
         # Pepper mode
         num_pepper = np.ceil(amount * image.size * (1.0 - s_vs_p))
+        # get random coordinated for pepper noise
         coords = [np.random.randint(0, i - 1, int(num_pepper)) for i in image.shape]
         out[coords] = 0
+
         return out
 
 
-def add_shadow(image, no_of_shadows=1):
+def add_shadow(image: np.ndarray, no_of_shadows: int = 1) -> np.ndarray:
+    """Add shadow to an image by decreasing lightness of
+    random polygonal regions in an image
+    Note: As the number of shadows increase, there are chances of overlapping
+    of shadows which causes the brightness of overlapped region to decrease further
+    Args:
+        image (np.ndarray): BGR image to add shadow on
+        no_of_shadows (int, optional): Number of shadows to add. Defaults to 1.
+
+    Returns:
+        np.ndarray: image with shadows
+    """
+    # convert to HLS
     image_HLS = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
-    ## Conversion to HLS
     mask = np.zeros_like(image)
-    imshape = image.shape
+    imshape = image.shape[:2]
     vertices_list = _generate_shadow_coordinates(imshape, no_of_shadows)
-    # 3 getting list of shadow vertices
+    # get list of shadow vertices
     for vertices in vertices_list:
-        cv2.fillPoly(
-            mask, vertices, 255
-        )  ## adding all shadow polygons on empty mask, single 255 denotes only red channel
+        # add all shadow polygons on empty mask,
+        # single 255 denotes only blue channel
+        cv2.fillPoly(mask, vertices, 255)
+        # if blue channel is hot, lower the birghtness for light channel
         image_HLS[:, :, 1][mask[:, :, 0] == 255] = (
             image_HLS[:, :, 1][mask[:, :, 0] == 255] * 0.75
-        )  ## if red channel is hot, image's "Lightness" channel's brightness is lowered
-        image_RGB = cv2.cvtColor(image_HLS, cv2.COLOR_HLS2BGR)  ## Conversion to RGB
-    return image_RGB
-
-
-def add_virtual_background(image, scale=1.25):
-    files = sorted(PATH_TO_BG_IMAGES.glob("*.jpg"))
-    index = np.random.randint(0, len(files))
-    bg_image = cv2.imread(str(files[index]))
-
-    org_height, org_width = image.shape[:2]
-    new_img_height, new_img_width = int(org_height * scale), int(org_width * scale)
-
-    bg_image = _perspective_warp(bg_image)
-
-    bg_image = cv2.resize(bg_image, (new_img_width, new_img_height))
-
-    loc_x = np.random.randint(0, new_img_width - org_width)
-    loc_y = np.random.randint(0, new_img_height - org_height)
-
-    bg_image[loc_y : loc_y + org_height, loc_x : loc_x + org_width, :] = image[:, :, :]
-
-    return bg_image
-
-
-def order_points(pts):
-    # order points in the order top-left, top-right, bottom-right
-    # bottom-left
-    final_rect = np.zeros((4, 2))
-
-    sums = np.sum(pts, axis=1)
-
-    final_rect[0] = pts[np.argmin(sums)]
-    final_rect[2] = pts[np.argmax(sums)]
-
-    diff = np.diff(pts, axis=1)
-
-    final_rect[1] = pts[np.argmin(diff)]
-    final_rect[3] = pts[np.argmax(diff)]
-
-    return final_rect
-
-
-def get_perspective_points(image, interactive=False, min_height=None, min_width=None):
-    positions = []
-    if interactive:
-        window_name = "Select perspective points"
-        cv2.namedWindow(window_name)
-        cv2.setMouseCallback(
-            window_name, partial(draw_circle, positions=positions, image=image)
         )
-        while True:
-            cv2.imshow(window_name, image)
-            k = cv2.waitKey(20) & 0xFF
-            if k == 27:
-                break
-        cv2.destroyAllWindows()
-    else:
-        # get a rectangle with min_height and min_width
-        print(image.shape[1], image.shape[0])
-        assert int((image.shape[1] - min_width)) / 2 > 0
-        x1 = np.random.randint(0, int((image.shape[1] - min_width) / 2))
-        y1 = np.random.randint(0, int((image.shape[0] - min_height) / 2))
-        x2 = np.random.randint(min_width, image.shape[1])
-        y2 = np.random.randint(min_height, image.shape[0])
-
-        positions = [
-            (x1, y1 + np.random.randint(int(-0.1 * min_height), int(0.1 * min_height))),
-            (x1, y2),
-            (x2, y1),
-            (x2 + np.random.randint(int(-0.1 * min_width), int(0.1 * min_width)), y2),
-        ]
-    return order_points(positions)
+        # convert to BGR
+        image_BGR = cv2.cvtColor(image_HLS, cv2.COLOR_HLS2BGR)
+    return image_BGR
 
 
-def draw_circle(event, x, y, flags, param, positions, image):
-    # If event is Left Button Click then store the coordinate in the lists
-    if event == cv2.EVENT_LBUTTONUP:
-        cv2.circle(image, (x, y), 2, (255, 0, 0), -1)
-        positions.append([x, y])
+def add_virtual_background(image: np.ndarray, bg_image: np.ndarray=None, scale: float=1.25) -> np.ndarray:
+    """[summary]
+    Adds a background to an image
+    Args:
+        image (np.ndarray): [description]
+        bg_image (np.ndarray, optional): [description]. Defaults to None.
+        scale (float, optional): [description]. Defaults to 1.25.
 
-
-def perspective_warp(image, fg_image):
-    pts1 = get_perspective_points(
-        image, min_height=fg_image.shape[0], min_width=fg_image.shape[1]
-    )
-
-    pts2 = order_points(
-        np.array(
-            [
-                [0, 0],
-                [fg_image.shape[1], 0],
-                [0, fg_image.shape[0]],
-                [fg_image.shape[1], fg_image.shape[0]],
-            ]
-        )
-    )
-    h, mask = cv2.findHomography(pts2, pts1, cv2.RANSAC, 5.0)
-    warped_image = cv2.warpPerspective(fg_image, h, (image.shape[1], image.shape[0]))
-    #     plt.imshow(warped_image[:,:,::-1])
-    return warped_image, pts1
-
-
-def add_virtual_background2(image, scale=1.25):
+    Returns:
+        np.ndarray: [description]
+    """
     files = sorted(PATH_TO_BG_IMAGES.glob("*.jpg"))
     index = np.random.randint(0, len(files))
     bg_image = cv2.imread(str(files[index]))
@@ -175,7 +113,7 @@ def add_virtual_background2(image, scale=1.25):
     new_img_height, new_img_width = int(org_height * scale), int(org_width * scale)
     bg_image = cv2.resize(bg_image, (new_img_width, new_img_height))
 
-    warped_fg_image, pts = perspective_warp(bg_image, image)
+    warped_fg_image, pts = _perspective_warp(bg_image, image)
     tmp_img = np.ones(bg_image.shape, dtype=np.uint8) * 255
     filled_img = cv2.fillPoly(tmp_img, np.int32([pts]), (0, 0, 0))
     masked = cv2.bitwise_and(bg_image, filled_img)
