@@ -1,9 +1,11 @@
+from pathlib import Path
+
 import cv2
 import numpy as np
-from pathlib import Path
+
 from affine_transform import rotation
-from utility import _perspective_warp, _add_texture, _generate_shadow_coordinates
-from non_linear_augmentation import distort
+from distortion import distort
+from utility import _add_texture, _generate_shadow_coordinates, _perspective_warp
 
 PATH_TO_WRINKLED_TEXTURE = Path("augmentation-helpers/overlays/wrinkle")
 PATH_TO_MONITOR_TEXTURE = Path("augmentation-helpers/overlays/monitor")
@@ -14,7 +16,7 @@ assert PATH_TO_MONITOR_TEXTURE.exists()
 assert PATH_TO_BG_IMAGES.exists()
 
 
-def add_noise(image: np.ndarray, noise_typ: str = None) -> np.ndarray:
+def noise(image: np.ndarray, noise_typ: str = None) -> np.ndarray:
     """
     Adds noise to an image. Avaiable noise_types "gauss",
     "s&p" (salt and pepper)
@@ -57,7 +59,7 @@ def add_noise(image: np.ndarray, noise_typ: str = None) -> np.ndarray:
         return out
 
 
-def add_shadow(image: np.ndarray, no_of_shadows: int = 1) -> np.ndarray:
+def shadow(image: np.ndarray, no_of_shadows: int = 1) -> np.ndarray:
     """Add shadow to an image by decreasing lightness of
     random polygonal regions in an image
     Note: As the number of shadows increase, there are chances of overlapping
@@ -88,7 +90,7 @@ def add_shadow(image: np.ndarray, no_of_shadows: int = 1) -> np.ndarray:
     return image_BGR
 
 
-def add_virtual_background(
+def virtual_background(
     image: np.ndarray,
     bg_image: np.ndarray = None,
     scale: float = 1.25,
@@ -134,7 +136,7 @@ def add_virtual_background(
     return final_image
 
 
-def add_watermark(image: np.ndarray, text: str = None) -> np.ndarray:
+def watermark(image: np.ndarray, text: str = None) -> np.ndarray:
     """
     Add watermark text to an image
     Args:
@@ -178,7 +180,7 @@ def add_watermark(image: np.ndarray, text: str = None) -> np.ndarray:
     return final_image
 
 
-def add_wrinkles(image: np.ndarray, wrinkled_overlay: np.ndarray = None) -> np.ndarray:
+def wrinkles(image: np.ndarray, wrinkled_overlay: np.ndarray = None) -> np.ndarray:
     """
     Adds wrinkles to an image
     Args:
@@ -198,12 +200,11 @@ def add_wrinkles(image: np.ndarray, wrinkled_overlay: np.ndarray = None) -> np.n
     textured = _add_texture(image, wrinkled_overlay)
     # get a distortion in text
     distorted = distort(textured)
-    # add noise
-    final_img = add_noise(distorted)
-    return final_img
+
+    return distorted
 
 
-def add_lcd_overlay(image: np.ndarray, overlay: np.ndarray = None) -> np.ndarray:
+def lcd_overlay(image: np.ndarray, overlay: np.ndarray = None) -> np.ndarray:
     """
     Add a LCD texture to an image
     Args:
@@ -248,7 +249,7 @@ def rotate(image: np.ndarray, angle: int = None) -> np.ndarray:
     return rotated_img
 
 
-def blur(image: np.ndarray, sigma_x: int= None, sigma_y: int=None) -> np.ndarray:
+def blur(image: np.ndarray, sigma_x: int = None, sigma_y: int = None) -> np.ndarray:
     """
     Applies Gussian blur to an image
     Args:
@@ -262,9 +263,9 @@ def blur(image: np.ndarray, sigma_x: int= None, sigma_y: int=None) -> np.ndarray
         np.ndarray: [description]
     """
     if not sigma_x:
-        sigma_x = np.random.randint(50,200)
+        sigma_x = np.random.randint(50, 200)
     if not sigma_y:
-        sigma_y = np.random.randint(50,200)
+        sigma_y = np.random.randint(50, 200)
     blurred_image = cv2.GaussianBlur(image, (5, 5), sigma_x, sigma_y)
     return blurred_image
 

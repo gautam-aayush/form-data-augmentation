@@ -1,0 +1,4 @@
+opencv-python==3.4.5.20
+numpy==1.16.1
+tqdm==4.56.0
+imageio==2.9.0

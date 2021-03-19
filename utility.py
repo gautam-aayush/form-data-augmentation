@@ -1,7 +1,8 @@
-import cv2
 from functools import partial
-import numpy as np
 from typing import List, Tuple
+
+import cv2
+import numpy as np
 
 
 def _add_texture(image: np.ndarray, overlay: np.ndarray) -> np.ndarray:

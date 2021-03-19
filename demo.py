@@ -1,15 +1,27 @@
-from linear_augmentation import *
-from non_linear_augmentation import *
 import cv2
 import imageio
 from tqdm import tqdm
 
+from basic_transform import (
+    blur,
+    contrast_and_brighten,
+    gamma_saturation,
+    lcd_overlay,
+    noise,
+    rotate,
+    scanner_like,
+    shadow,
+    watermark,
+    wrinkles,
+)
+from distortion import distort, perspective, stretch
+
 augmentations = [
     rotate,
-    add_shadow,
-    add_watermark,
-    add_wrinkles,
-    add_lcd_overlay,
+    shadow,
+    watermark,
+    wrinkles,
+    lcd_overlay,
     gamma_saturation,
     contrast_and_brighten,
     scanner_like,
@@ -17,12 +29,10 @@ augmentations = [
     perspective,
     stretch,
     blur,
-    add_noise,
+    noise,
 ]
 
-image = cv2.imread(
-    "/home/aayush-fm/Documents/fuse/fuse-extract-v2-ai/fuse/notebooks/exploratory/data/W2/horizontal/w2_horizontal_052.jpg"
-)
+image = cv2.imread("data/sample.jpg")
 
 
 def create_gif(image_list, gif_name, duration=1):

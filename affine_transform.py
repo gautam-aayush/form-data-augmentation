@@ -1,19 +1,53 @@
+from pathlib import Path
+
 import cv2
 import numpy as np
 from tqdm import tqdm
-from pathlib import Path
 
 
-def displacement(image, horizontal, vertical):
+def displacement(
+    image: np.ndarray, horizontal_scale: float = 0.1, vertical_scale: float = 0.1
+) -> np.ndarray:
+    """
+    Displaces an image horzontally and vertically by respective scales
+    Args:
+        image (np.ndarray): BGR image
+        horizontal_scale (float, optional): Fraction of original image width to displace.
+        Defaults to 0.1.
+        vertical_scale (float, optional): Fraction of original image width to displace.
+        Defaults to 0.1.
+
+    Returns:
+        np.ndarray: Displaced image
+    """
     height, width = image.shape[:2]
+    horizontal = int(horizontal_scale * width)
+    vertical = int(vertical_scale * height)
     translation_mat = np.array([[1, 0, horizontal], [0, 1, vertical]], dtype=np.float32)
+    border_color = (255, 255, 255)  # white borders
     displaced_image = cv2.warpAffine(
-        image, translation_mat, (width + horizontal, height + vertical)
+        image,
+        translation_mat,
+        (width + horizontal, height + vertical),
+        borderValue=border_color,
     )
     return displaced_image
 
 
-def rotation(image, angle=90, same=False):
+def rotation(image: np.ndarray, angle: int = 90, same: bool = False) -> np.ndarray:
+    """
+    Rotates an image through given angle
+    Args:
+        image (np.ndarray): BGR image
+        angle (int, optional): Rotation angle (counterclockwise) about its center. Defaults to 90.
+        same (bool, optional): When True the output image is of the same size as input
+        however, some portion of the original image may be lost. When False, height and width
+        are adjusted to preserve original image content.
+        Defaults to False.
+
+    Returns:
+        np.ndarray: Rotated image
+    """
     height, width = image.shape[:2]
     centerX = (width - 1) / 2
     centerY = (height - 1) / 2
@@ -32,16 +66,28 @@ def rotation(image, angle=90, same=False):
         rotation_mat[0, 2] += (new_width / 2) - centerX
         rotation_mat[1, 2] += (new_height / 2) - centerY
 
+    border_color = (255, 255, 255)  # white borders
     rotated_image = cv2.warpAffine(
-        image, rotation_mat, (new_width, new_height), borderValue=(255, 255, 255)
+        image, rotation_mat, (new_width, new_height), borderValue=border_color
     )
 
     return rotated_image
 
 
+def shear(image: np.ndarray, shear_X: float = 0.1, shear_Y: float = 0.1) -> np.ndarray:
+    """
+    Shears the image along x and y directions
+    Args:
+        image (np.ndarray): BGR image
+        shear_X (float, optional): Value of horizontal shear. Defaults to 0.1.
+        shear_Y (float, optional): Value of vertical shear. Defaults to 0.1.
 
-def shear(image, shear_X, shear_Y):
+    Returns:
+        np.ndarray: Sheared image
+    """
     width, height = image.shape[:2]
+
+    # increase image height and width to preserve image content
     new_width = int(2 * width)
     new_height = int(2 * height)
     M2 = np.float32([[1, shear_Y, 0], [shear_X, 1, 0]])
@@ -51,10 +97,9 @@ def shear(image, shear_X, shear_Y):
     centerY = (height - 1) / 2
     M2[0, 2] += (new_width / 2) - centerX
     M2[1, 2] += (new_height / 2) - centerY
+
     sheared_image = cv2.warpAffine(image, M2, (new_width, new_height))
     return sheared_image
-
-
 
 
 def arg_to_string(arg):
