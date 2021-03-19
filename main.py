@@ -40,9 +40,9 @@ augmentations = [
 
 
 @click.command()
-@click.option("--data_root", type=click.Path(exists=True), default="data/")
-@click.option("--output_dir", type=click.Path(exists=True), default="output/")
-@click.option("--aug_prob", default=1)
+@click.option("--data-root", type=click.Path(exists=True), default="data/")
+@click.option("--output-dir", type=click.Path(exists=True), default="output/")
+@click.option("--aug-prob",type=float, default=1.0)
 def main(data_root, output_dir, aug_prob):
     data_root = Path(data_root)
     output_dir = Path(output_dir)

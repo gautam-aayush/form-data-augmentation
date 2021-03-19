@@ -7,3 +7,4 @@ profile_default/
 ipython_config.py
 output/*
 !output/.gitkeep
+!output/*.gif
