@@ -5,7 +5,8 @@ import numpy as np
 
 from affine_transform import rotation
 from distortion import distort
-from utility import _add_texture, _generate_shadow_coordinates, _perspective_warp
+from utility import (_add_texture, _generate_shadow_coordinates,
+                     _perspective_warp)
 
 PATH_TO_WRINKLED_TEXTURE = Path("augmentation-helpers/overlays/wrinkle")
 PATH_TO_MONITOR_TEXTURE = Path("augmentation-helpers/overlays/monitor")

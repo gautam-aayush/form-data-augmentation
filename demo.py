@@ -2,18 +2,9 @@ import cv2
 import imageio
 from tqdm import tqdm
 
-from basic_transform import (
-    blur,
-    contrast_and_brighten,
-    gamma_saturation,
-    lcd_overlay,
-    noise,
-    rotate,
-    scanner_like,
-    shadow,
-    watermark,
-    wrinkles,
-)
+from basic_transform import (blur, contrast_and_brighten, gamma_saturation,
+                             lcd_overlay, noise, rotate, scanner_like, shadow,
+                             watermark, wrinkles)
 from distortion import distort, perspective, stretch
 
 augmentations = [

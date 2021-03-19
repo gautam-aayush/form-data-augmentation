@@ -6,22 +6,11 @@ import numpy as np
 from pdf2image import convert_from_path
 from tqdm import tqdm
 
-from basic_transform import (
-    contrast_and_brighten,
-    gamma_saturation,
-    lcd_overlay,
-    rotate,
-    scanner_like,
-    shadow,
-    virtual_background,
-    watermark,
-    wrinkles,
-)
-from composite_transform import (
-    background_with_lcd_stretch,
-    rotation_with_lcd,
-    wrinkle_with_noise,
-)
+from basic_transform import (contrast_and_brighten, gamma_saturation,
+                             lcd_overlay, rotate, scanner_like, shadow,
+                             virtual_background, watermark, wrinkles)
+from composite_transform import (background_with_lcd_stretch,
+                                 rotation_with_lcd, wrinkle_with_noise)
 
 
 def get_image(filename, page=1):
