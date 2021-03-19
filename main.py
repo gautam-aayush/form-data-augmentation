@@ -1,5 +1,5 @@
-from .linear_augmentation import *
-from .non_linear_augmentation import *
+from linear_augmentation import *
+from non_linear_augmentation import *
 import click
 from pathlib import Path
 from tqdm import tqdm

@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 # Author: RubanSeven
+# Github repo: https://github.com/RubanSeven/Text-Image-Augmentation-python
+
 
 import numpy as np
 

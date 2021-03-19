@@ -10,10 +10,6 @@ def displacement(image, horizontal, vertical):
     displaced_image = cv2.warpAffine(
         image, translation_mat, (width + horizontal, height + vertical)
     )
-    #     ax1 = plt.subplot(1,2,1)
-    #     ax2 = plt.subplot(1,2,2)
-    #     ax1.imshow(image[:,:,::-1])
-    #     ax2.imshow(displaced_image[:,:,::-1])
     return displaced_image
 
 
@@ -43,18 +39,6 @@ def rotation(image, angle=90, same=False):
     return rotated_image
 
 
-def noise(image, mean=0, var=1):
-    height, width, channels = image.shape
-    sigma = var ** 1
-    gauss = np.random.normal(mean, sigma, (height, width, channels))
-    gauss = gauss.reshape(height, width, channels)
-    noisy_image = image + gauss
-    #     ax1 = plt.subplot(1,2,1)
-    #     ax2 = plt.subplot(1,2,2)
-    #     ax1.imshow(image[:,:,::-1])
-    #     ax2.imshow(noisy_image[:,:,::-1].astype(np.uint8))
-    return noisy_image
-
 
 def shear(image, shear_X, shear_Y):
     width, height = image.shape[:2]
@@ -71,10 +55,6 @@ def shear(image, shear_X, shear_Y):
     return sheared_image
 
 
-#     ax1 = plt.subplot(1,2,1)
-#     ax2 = plt.subplot(1,2,2)
-#     ax1.imshow(image[:,:,::-1])
-#     ax2.imshow(sheared_image[:,:,::-1].astype(np.uint8))
 
 
 def arg_to_string(arg):
