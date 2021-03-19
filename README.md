@@ -2,9 +2,28 @@
 
 ## Available augmentations
 1. Shadow
-!['gif]('output/add_shadow.gif')
+![](https://github.com/gautam-aayush/form-data-augmentation/blob/main/output/shadow.gif)
 
-2. 
+2. Wrinkles
+![](https://github.com/gautam-aayush/form-data-augmentation/blob/main/output/wrinkles.gif)
+
+3. Saturation
+![](https://github.com/gautam-aayush/form-data-augmentation/blob/main/output/gamma_saturation.gif)
+
+4. Watermark
+![](https://github.com/gautam-aayush/form-data-augmentation/blob/main/output/watermark.gif?raw=true)
+
+5. Binarize
+![](https://user-images.githubusercontent.com/70262751/111758313-71413b00-88c4-11eb-846e-4380ee32d606.png)
+
+6. Perspective Distortion
+![](https://github.com/gautam-aayush/form-data-augmentation/blob/main/output/perspective.gif?raw=true)
+
+7. Stretch Distortion
+![](https://github.com/gautam-aayush/form-data-augmentation/blob/main/output/stretch.gif?raw=true)
+
+8. LCD Texture
+![](https://github.com/gautam-aayush/form-data-augmentation/blob/main/output/lcd_overlay.gif?raw=true)
 
 ## Steps:
 
