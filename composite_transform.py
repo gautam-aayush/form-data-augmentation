@@ -1,6 +1,6 @@
 from basic_transform import (lcd_overlay, noise, rotate, virtual_background,
                              wrinkles)
-from distortion import distort, perspective, stretch
+from distortion import stretch
 
 
 def rotation_with_lcd(image):
