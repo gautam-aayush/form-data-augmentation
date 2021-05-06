@@ -3,7 +3,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from affine_transform import rotation
+from affine_transform import rotation, displacement, shear
 from distortion import distort
 from utility import (_add_texture, _generate_shadow_coordinates,
                      _perspective_warp)
@@ -236,19 +236,31 @@ def rotate(image: np.ndarray, angle: int = None) -> np.ndarray:
     """
     if not angle:
         # Randomly choose an angle
-        random = np.random.rand()
+        # random = np.random.rand()
         # 50% of the time choose an angle between -10 and 10 degrees
-        if random < 0.5:
-            angle = np.random.rand() * 10 - 10
-        elif random < 0.75:
+        # if random < 0.5:
+        angle = np.random.rand() * 10 - 10
+        # elif random < 0.75:
             # 25% of the time 90 degrees
-            angle = 90
-        else:
-            # 25% of the time 180 degrees
-            angle = 180
+            # angle = 90
+        # else:
+        #     # 25% of the time 180 degrees
+        #     angle = 180
     rotated_img = rotation(image, angle)
     return rotated_img
 
+
+def displace(image: np.ndarray):
+    horizontal_displacement = np.random.rand() * 0.2
+    vertical_displacement = np.random.rand() * 0.2
+    displaced_img = displacement(image, horizontal_displacement, vertical_displacement)
+    return displaced_img
+
+def shearing(image: np.ndarray):
+    horizontal_shear = np.random.rand() * 0.1
+    vertical_shear = np.random.rand() * 0.1
+    sheared_img = shear(image, horizontal_shear, vertical_shear)
+    return sheared_img
 
 def blur(image: np.ndarray, sigma_x: int = None, sigma_y: int = None) -> np.ndarray:
     """
