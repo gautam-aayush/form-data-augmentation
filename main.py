@@ -1,3 +1,4 @@
+from distortion import perspective
 from pathlib import Path
 
 import click
@@ -8,7 +9,7 @@ from tqdm import tqdm
 
 from basic_transform import (contrast_and_brighten, gamma_saturation,
                              lcd_overlay, rotate, scanner_like, shadow,
-                             virtual_background, watermark, wrinkles)
+                             virtual_background, watermark, wrinkles, shearing, displace)
 from composite_transform import (background_with_lcd_stretch,
                                  rotation_with_lcd, wrinkle_with_noise)
 
@@ -26,16 +27,19 @@ def get_image(filename, page=1):
 augmentations = [
     rotate,
     shadow,
-    watermark,
+    # watermark,
     wrinkles,
-    lcd_overlay,
-    gamma_saturation,
+    shearing,
+    displace,
+    # lcd_overlay,
+    # gamma_saturation,
     contrast_and_brighten,
     scanner_like,
-    virtual_background,
-    rotation_with_lcd,
+    # virtual_background,
+    # rotation_with_lcd,
     wrinkle_with_noise,
-    background_with_lcd_stretch,
+    perspective,
+    # background_with_lcd_stretch,
 ]
 
 
@@ -57,11 +61,11 @@ def main(data_root, output_dir, aug_prob):
             data_inner = ""
         else:
             data_inner = Path(*data_inner)
-        for aug in augmentations:
+        for i, aug in enumerate(augmentations):
             if np.random.rand() < aug_prob:
                 result = aug(org_img)
                 filename = file.parts[-1]
-                new_filename = f"{filename.split('.')[0]}_{aug.__name__}.jpg"
+                new_filename = f"{filename.split('.')[0]}_aug_{i+1}.jpg"
                 output_path = Path(output_dir, data_inner, new_filename)
                 cv2.imwrite(str(output_path), result)
 
